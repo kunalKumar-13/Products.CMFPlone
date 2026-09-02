@@ -29,7 +29,11 @@ def _add_aria_title(svgtree, cfg):
     root.attrib.pop("aria-labelledby", None)
     if not cfg.get("title"):
         return
-    ns = root.nsmap.get(None, "")
+    # Take the namespace from the root element itself rather than from the
+    # default namespace mapping: an SVG using a prefixed namespace
+    # (<svg:svg xmlns:svg="...">) has no default entry, and nsmap.get(None)
+    # would fall back to no namespace at all.
+    ns = etree.QName(root).namespace or ""
     # A title tag is still useful: browsers show it as a hover tooltip. It is
     # not used for screen reader labelling, which aria-hidden now suppresses.
     title = root.find(f"{{{ns}}}title")

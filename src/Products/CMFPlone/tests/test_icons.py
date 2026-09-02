@@ -135,6 +135,19 @@ class SVGAriaTest(unittest.TestCase):
         titles = tree.getroot().findall("{http://www.w3.org/2000/svg}title")
         self.assertEqual(len(titles), 1)
 
+    def test_prefixed_namespace_svg(self):
+        # An SVG declaring its namespace with a prefix has no default nsmap
+        # entry; the title must still land in the SVG namespace.
+        svg = (
+            b'<svg:svg xmlns:svg="http://www.w3.org/2000/svg" '
+            b'viewBox="0 0 16 16"></svg:svg>'
+        )
+        root = self._modify({"title": "Bug"}, svg)
+        self.assertEqual(root.attrib.get("aria-hidden"), "true")
+        title = root.find("{http://www.w3.org/2000/svg}title")
+        self.assertIsNotNone(title)
+        self.assertEqual(title.text, "Bug")
+
     def test_serialised_output(self):
         tree = etree.parse(io.BytesIO(self.SVG))
         _add_aria_title(tree, {"title": "Bug"})
